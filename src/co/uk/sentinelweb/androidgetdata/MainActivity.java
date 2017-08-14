@@ -86,18 +86,14 @@ public class MainActivity extends Activity {
         final Rect dispRect = new Rect();
         final float density = DispUtil.getDensity(this);// init density
         addRow(ctnr, "Display", "", true);
-        if (Build.VERSION.SDK_INT >= 13) {
-            DispUtil.getDisplay(this).getSize(p);
-            addRow(ctnr, "Disp size", p.x + " x " + p.y);
-        }
+        DispUtil.getDisplay(this).getSize(p);
+        addRow(ctnr, "Disp size", p.x + " x " + p.y);
         if (Build.VERSION.SDK_INT >= 17) {
             DispUtil.getDisplay(this).getRealSize(p);
             addRow(ctnr, "Disp real size", p.x + " x " + p.y);
         }
-        if (Build.VERSION.SDK_INT >= 13) {
-            DispUtil.getDisplay(this).getRectSize(dispRect);
-            addRow(ctnr, "Disp rect size", dispRect.width() + " x " + dispRect.height());
-        }
+        DispUtil.getDisplay(this).getRectSize(dispRect);
+        addRow(ctnr, "Disp rect size", dispRect.width() + " x " + dispRect.height());
         addRow(ctnr, "Disp rect border", "t:" + dispRect.top + " l:" + dispRect.left + " b:" + dispRect.bottom + " r:" + dispRect.right);
         addRow(ctnr, "Density", density);
         addRow(ctnr, "Rotation", DispUtil.getDisplay(this).getRotation());
@@ -144,15 +140,9 @@ public class MainActivity extends Activity {
         if (Build.VERSION.SDK_INT >= 17) {
             addRow(ctnr, "densityDpi", configuration.densityDpi);
         }
-        if (Build.VERSION.SDK_INT >= 13) {
-            addRow(ctnr, "screenHeightDp", configuration.screenHeightDp);
-        }
-        if (Build.VERSION.SDK_INT >= 13) {
-            addRow(ctnr, "screenWidthDp", configuration.screenWidthDp);
-        }
-        if (Build.VERSION.SDK_INT >= 13) {
-            addRow(ctnr, "smallestScreenWidthDp", configuration.smallestScreenWidthDp);
-        }
+        addRow(ctnr, "screenHeightDp", configuration.screenHeightDp);
+        addRow(ctnr, "screenWidthDp", configuration.screenWidthDp);
+        addRow(ctnr, "smallestScreenWidthDp", configuration.smallestScreenWidthDp);
         final int sz = configuration.screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
         final int longScreen = configuration.screenLayout & Configuration.SCREENLAYOUT_LONG_MASK;
         final int layoutDir = configuration.screenLayout & Configuration.SCREENLAYOUT_LAYOUTDIR_MASK;
@@ -168,9 +158,7 @@ public class MainActivity extends Activity {
         addRow(ctnr, "navigation", getMapVal(configuration.navigation, _nav));
         addRow(ctnr, "navigationHidden", getMapVal(configuration.navigationHidden, _navHidden));
         addRow(ctnr, "touchscreen", getMapVal(configuration.touchscreen, _touchScreen));
-        if (Build.VERSION.SDK_INT >= 8) {
-            addRow(ctnr, "uiMode", configuration.uiMode);
-        }
+        addRow(ctnr, "uiMode", configuration.uiMode);
 
         addRow(ctnr, "Time", "", true);
         addRow(ctnr, "currentTimeMillis", System.currentTimeMillis());
@@ -180,7 +168,8 @@ public class MainActivity extends Activity {
 
         addRow(ctnr, "Storage", "", true);
         addRow(ctnr, "mounted", DiskUtil.sdMounted());
-        addRow(ctnr, "writeState", DiskUtil.sdWriteState());
+        Boolean value = DiskUtil.sdWriteState();
+        addRow(ctnr, "writeState", value != null ? Boolean.toString(value) : "None");
         addRow(ctnr, "dir", Environment.getExternalStorageDirectory().getAbsolutePath());
         addRow(ctnr, "state", Environment.getExternalStorageState());
         addRow(ctnr, "poddir", Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PODCASTS).getAbsolutePath());

@@ -29,6 +29,7 @@ import co.uk.sentinelweb.androidgetdata.util.StorageOptions;
 
 public class MainActivity extends Activity {
 
+    public static final double MM_IN_INCH = 25.4;
     private LinearLayout ctnr;
 
     public static final HashMap<Integer, String> _orientation = new HashMap<Integer, String>();
@@ -109,10 +110,13 @@ public class MainActivity extends Activity {
         addMetrics(realdm);
 
         addRow(ctnr, "Calculated", "", true);
-        addRow(ctnr, "DPI size", dm.widthPixels / dm.density + " x " + dm.heightPixels / dm.density);
-        addRow(ctnr, "DPI size inches", dm.widthPixels / dm.xdpi + " x " + dm.heightPixels / dm.ydpi);
-        addRow(ctnr, "Screen size inches", ""+Math.sqrt(Math.pow(dm.widthPixels / dm.xdpi,2)+ Math.pow(dm.heightPixels / dm.ydpi,2)));
-        addRow(ctnr, "Aspect", dm.widthPixels / (float) dm.heightPixels);
+        addRow(ctnr, "Screen Real size dp", realdm.widthPixels / realdm.density + " x " + realdm.heightPixels / realdm.density);
+        float xInches = realdm.widthPixels / dm.xdpi;
+        float yInches = realdm.heightPixels / dm.ydpi;
+        addRow(ctnr, "Screen Real size inches", xInches + " x " + yInches);
+        addRow(ctnr, "Screen Real size mm", xInches* MM_IN_INCH + " x " + yInches* MM_IN_INCH);
+        addRow(ctnr, "Screen size inches", "" + Math.sqrt(Math.pow(xInches, 2) + Math.pow(yInches, 2)));
+        addRow(ctnr, "Aspect", realdm.widthPixels / (float) realdm.heightPixels);
 
         addRow(ctnr, "Resources", "", true);
         addRow(ctnr, "DPI class", getResources().getString(R.string.resdpi));
@@ -274,7 +278,7 @@ public class MainActivity extends Activity {
                         }
                     }
                 }
-                SendObjectParent.launchSend(MainActivity.this, "Android Device Data", sb.toString(), "feedback@sentinelweb.co.uk");
+                SendObjectParent.launchSend(MainActivity.this, "Android Device Data : " + Build.BRAND + "/" + Build.MODEL, sb.toString());
                 return true;
             }
         });

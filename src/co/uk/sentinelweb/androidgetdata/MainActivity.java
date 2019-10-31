@@ -102,17 +102,16 @@ public class MainActivity extends Activity {
 
         addRow(ctnr, "Metrics", "", true);
         final DisplayMetrics dm = DispUtil.getMetrics(MainActivity.this);
-        addRow(ctnr, "density", dm.density);
-        addRow(ctnr, "densityDpi", dm.densityDpi);
-        addRow(ctnr, "scaledDensity", dm.scaledDensity);
-        addRow(ctnr, "widthPixels", dm.widthPixels);
-        addRow(ctnr, "heightPixels", dm.heightPixels);
-        addRow(ctnr, "xdpi", dm.xdpi);
-        addRow(ctnr, "ydpi", dm.ydpi);
+        addMetrics(dm);
+
+        addRow(ctnr, "Real Metrics", "", true);
+        final DisplayMetrics realdm = DispUtil.getRealMetrics(MainActivity.this);
+        addMetrics(realdm);
 
         addRow(ctnr, "Calculated", "", true);
-        addRow(ctnr, "DPI width", dm.widthPixels / dm.density);
-        addRow(ctnr, "DPI height", dm.heightPixels / dm.density);
+        addRow(ctnr, "DPI size", dm.widthPixels / dm.density + " x " + dm.heightPixels / dm.density);
+        addRow(ctnr, "DPI size inches", dm.widthPixels / dm.xdpi + " x " + dm.heightPixels / dm.ydpi);
+        addRow(ctnr, "Screen size inches", ""+Math.sqrt(Math.pow(dm.widthPixels / dm.xdpi,2)+ Math.pow(dm.heightPixels / dm.ydpi,2)));
         addRow(ctnr, "Aspect", dm.widthPixels / (float) dm.heightPixels);
 
         addRow(ctnr, "Resources", "", true);
@@ -198,6 +197,16 @@ public class MainActivity extends Activity {
             }
         }
         //addRow(ctnr, "writeState",DiskUtil.sdWriteState());
+    }
+
+    private void addMetrics(DisplayMetrics dm) {
+        addRow(ctnr, "density", dm.density);
+        addRow(ctnr, "densityDpi", dm.densityDpi);
+        addRow(ctnr, "scaledDensity", dm.scaledDensity);
+        addRow(ctnr, "widthPixels", dm.widthPixels);
+        addRow(ctnr, "heightPixels", dm.heightPixels);
+        addRow(ctnr, "xdpi", dm.xdpi);
+        addRow(ctnr, "ydpi", dm.ydpi);
     }
 
     public String getMapVal(final int val, final HashMap<Integer, String> map) {

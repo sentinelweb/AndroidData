@@ -66,6 +66,12 @@ public class DispUtil {
 		return metrics;
 	}
 	
+	public  static DisplayMetrics getRealMetrics(Context context) {
+		DisplayMetrics metrics=new DisplayMetrics();
+		getDisplay(context).getRealMetrics(metrics);
+		return metrics;
+	}
+
 	public  static Display getDisplay(Context context) {
 		WindowManager wm = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
 		return wm.getDefaultDisplay();

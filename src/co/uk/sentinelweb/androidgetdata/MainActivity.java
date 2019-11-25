@@ -1,6 +1,9 @@
 package co.uk.sentinelweb.androidgetdata;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -9,7 +12,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
+import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
+import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
@@ -20,7 +26,6 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.util.Date;
-import java.util.HashMap;
 
 import co.uk.sentinelweb.androidgetdata.util.DiskUtil;
 import co.uk.sentinelweb.androidgetdata.util.DispUtil;
@@ -30,15 +35,16 @@ import co.uk.sentinelweb.androidgetdata.util.StorageOptions;
 public class MainActivity extends Activity {
 
     public static final double MM_IN_INCH = 25.4;
+    public static final int PERM_REQUEST_CODE = 1111;
     private LinearLayout ctnr;
 
-    public static final HashMap<Integer, String> _orientation = new HashMap<Integer, String>();
-    public static final HashMap<Integer, String> _nav = new HashMap<Integer, String>();
-    public static final HashMap<Integer, String> _navHidden = new HashMap<Integer, String>();
-    public static final HashMap<Integer, String> _touchScreen = new HashMap<Integer, String>();
-    public static final HashMap<Integer, String> _screenSize = new HashMap<Integer, String>();
-    public static final HashMap<Integer, String> _screenLong = new HashMap<Integer, String>();
-    public static final HashMap<Integer, String> _screenLayoutDir = new HashMap<Integer, String>();
+    public static final SparseArray<String> _orientation = new SparseArray<>();
+    public static final SparseArray<String> _nav = new SparseArray<>();
+    public static final SparseArray<String> _navHidden = new SparseArray<>();
+    public static final SparseArray<String> _touchScreen = new SparseArray<>();
+    public static final SparseArray<String> _screenSize = new SparseArray<>();
+    public static final SparseArray<String> _screenLong = new SparseArray<>();
+    public static final SparseArray<String> _screenLayoutDir = new SparseArray<>();
 
     static {
         _orientation.put(Configuration.ORIENTATION_LANDSCAPE, "ORIENTATION_LANDSCAPE");
@@ -106,18 +112,20 @@ public class MainActivity extends Activity {
         addMetrics(dm);
 
         addRow(ctnr, "Real Metrics", "", true);
-        final DisplayMetrics realdm = DispUtil.getRealMetrics(MainActivity.this);
-        addMetrics(realdm);
+        final DisplayMetrics realdm;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            realdm = DispUtil.getRealMetrics(MainActivity.this);
+            addMetrics(realdm);
 
-        addRow(ctnr, "Calculated", "", true);
-        addRow(ctnr, "Screen Real size dp", realdm.widthPixels / realdm.density + " x " + realdm.heightPixels / realdm.density);
-        float xInches = realdm.widthPixels / dm.xdpi;
-        float yInches = realdm.heightPixels / dm.ydpi;
-        addRow(ctnr, "Screen Real size inches", xInches + " x " + yInches);
-        addRow(ctnr, "Screen Real size mm", xInches* MM_IN_INCH + " x " + yInches* MM_IN_INCH);
-        addRow(ctnr, "Screen size inches", "" + Math.sqrt(Math.pow(xInches, 2) + Math.pow(yInches, 2)));
-        addRow(ctnr, "Aspect", realdm.widthPixels / (float) realdm.heightPixels);
-
+            addRow(ctnr, "Calculated", "", true);
+            addRow(ctnr, "Screen Real size dp", realdm.widthPixels / realdm.density + " x " + realdm.heightPixels / realdm.density);
+            float xInches = realdm.widthPixels / dm.xdpi;
+            float yInches = realdm.heightPixels / dm.ydpi;
+            addRow(ctnr, "Screen Real size inches", xInches + " x " + yInches);
+            addRow(ctnr, "Screen Real size mm", xInches * MM_IN_INCH + " x " + yInches * MM_IN_INCH);
+            addRow(ctnr, "Screen size inches", "" + Math.sqrt(Math.pow(xInches, 2) + Math.pow(yInches, 2)));
+            addRow(ctnr, "Aspect", realdm.widthPixels / (float) realdm.heightPixels);
+        }
         addRow(ctnr, "Resources", "", true);
         addRow(ctnr, "DPI class", getResources().getString(R.string.resdpi));
 
@@ -200,7 +208,33 @@ public class MainActivity extends Activity {
                 }
             }
         }
-        //addRow(ctnr, "writeState",DiskUtil.sdWriteState());
+        checkTelephony();
+    }
+
+    private void checkTelephony() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+                addTelephony();
+            } else {
+                requestPermissions(new String[]{Manifest.permission.READ_PHONE_STATE}, PERM_REQUEST_CODE);
+            }
+        } else {
+            addTelephony();
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private void addTelephony() {
+        TelephonyManager systemService = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        addRow(ctnr, "Telephony", " -------", true);
+        addRow(ctnr, "IMEI", systemService.getDeviceId());
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == PERM_REQUEST_CODE && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            addTelephony();
+        }
     }
 
     private void addMetrics(DisplayMetrics dm) {
@@ -213,8 +247,8 @@ public class MainActivity extends Activity {
         addRow(ctnr, "ydpi", dm.ydpi);
     }
 
-    public String getMapVal(final int val, final HashMap<Integer, String> map) {
-        return new StringBuffer("[").append(val).append("] ").append(map.get(val)).toString();
+    public String getMapVal(final int val, final SparseArray<String> map) {
+        return "[" + val + "] " + map.get(val);
     }
 
     private void addRow(final LinearLayout ctnr, final String name, final long value) {
@@ -240,7 +274,7 @@ public class MainActivity extends Activity {
     private void addRow(final LinearLayout ctnr, final String name, final String value, final boolean header) {
         final FrameLayout fl = new FrameLayout(this);
         LinearLayout.inflate(this, R.layout.fragment_row, fl);
-        final TextView n = (TextView) fl.findViewById(R.id.name);
+        final TextView n = fl.findViewById(R.id.name);
         n.setText(name);
         if (header) {
             n.setTextSize(22);
@@ -249,7 +283,7 @@ public class MainActivity extends Activity {
             n.setTextColor(Color.WHITE);
             fl.setBackgroundColor(Color.DKGRAY);
         }
-        final TextView v = (TextView) fl.findViewById(R.id.value);
+        final TextView v = fl.findViewById(R.id.value);
         v.setText(value);
         ctnr.addView(fl);
     }
@@ -269,8 +303,10 @@ public class MainActivity extends Activity {
                     final View vw = ctnr.getChildAt(i);
                     if (vw instanceof FrameLayout) {
                         final FrameLayout fl = (FrameLayout) vw;
-                        final TextView n = (TextView) fl.findViewById(R.id.name);
-                        final TextView v = ((TextView) fl.findViewById(R.id.value));
+                        final TextView n = fl.findViewById(R.id.name);
+                        final TextView v = fl.findViewById(R.id.value);
+                        v.setTextIsSelectable(true);
+                        v.setSelectAllOnFocus(true);
                         if (n.getTag() != null && (Boolean) n.getTag()) {
                             sb.append("\n").append(n.getText()).append("\n").append("--------------------------------").append("\n");
                         } else {

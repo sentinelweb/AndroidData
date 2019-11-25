@@ -36,64 +36,69 @@ package co.uk.sentinelweb.androidgetdata.util;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
+
 import co.uk.sentinelweb.androidgetdata.Globals;
 
 public class DispUtil {
-	
-	private static float density = -1; 
-	public static float getDensity(Context context) {
-		 if (density==-1) {
-			try {
-				DisplayMetrics metrics = getMetrics(context);
-				density=metrics.density;
-				Log.d(Globals.LOG_TAG, "getdensity:"+density);
-				
-			} catch (Exception e) {
-				Log.d(Globals.LOG_TAG, "getdensity:",e);
-				density=1;
-			}
-		}
-		return density;
-	}
-	
-	public  static DisplayMetrics getMetrics(Context context) {
-		DisplayMetrics metrics=new DisplayMetrics();
-		getDisplay(context).getMetrics(metrics);
-		return metrics;
-	}
-	
-	public  static DisplayMetrics getRealMetrics(Context context) {
-		DisplayMetrics metrics=new DisplayMetrics();
-		getDisplay(context).getRealMetrics(metrics);
-		return metrics;
-	}
 
-	public  static Display getDisplay(Context context) {
-		WindowManager wm = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
-		return wm.getDefaultDisplay();
-	}
-	
-	public static int getScreenOrientation(Activity context)
-	{
-	    Display getOrient = context.getWindowManager().getDefaultDisplay();
-	    int orientation = Configuration.ORIENTATION_UNDEFINED;
-	    if(getOrient.getWidth()==getOrient.getHeight()){
-	        orientation = Configuration.ORIENTATION_SQUARE;
-	    } else{ 
-	        if(getOrient.getWidth() < getOrient.getHeight()){
-	            orientation = Configuration.ORIENTATION_PORTRAIT;
-	        }else { 
-	             orientation = Configuration.ORIENTATION_LANDSCAPE;
-	        }
-	    }
-	    return orientation;
-	}
-	
-	public static int dp(int width) {
-		return (int)(width*density);
-	}
+    private static float density = -1;
+
+    public static float getDensity(Context context) {
+        if (density == -1) {
+            try {
+                DisplayMetrics metrics = getMetrics(context);
+                density = metrics.density;
+                Log.d(Globals.LOG_TAG, "getdensity:" + density);
+
+            } catch (Exception e) {
+                Log.d(Globals.LOG_TAG, "getdensity:", e);
+                density = 1;
+            }
+        }
+        return density;
+    }
+
+    public static DisplayMetrics getMetrics(Context context) {
+        DisplayMetrics metrics = new DisplayMetrics();
+        getDisplay(context).getMetrics(metrics);
+        return metrics;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    public static DisplayMetrics getRealMetrics(Context context) {
+        DisplayMetrics metrics = new DisplayMetrics();
+        getDisplay(context).getRealMetrics(metrics);
+        return metrics;
+    }
+
+    public static Display getDisplay(Context context) {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        assert wm != null;
+        return wm.getDefaultDisplay();
+    }
+
+    public static int getScreenOrientation(Activity context) {
+        Display getOrient = context.getWindowManager().getDefaultDisplay();
+        int orientation = Configuration.ORIENTATION_UNDEFINED;
+        if (getOrient.getWidth() == getOrient.getHeight()) {
+            orientation = Configuration.ORIENTATION_SQUARE;
+        } else {
+            if (getOrient.getWidth() < getOrient.getHeight()) {
+                orientation = Configuration.ORIENTATION_PORTRAIT;
+            } else {
+                orientation = Configuration.ORIENTATION_LANDSCAPE;
+            }
+        }
+        return orientation;
+    }
+
+    public static int dp(int width) {
+        return (int) (width * density);
+    }
 }
